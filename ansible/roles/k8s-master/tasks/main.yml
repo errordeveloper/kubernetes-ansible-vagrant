@@ -1,0 +1,15 @@
+---
+- name: Ensure kubeadm initialization
+  become: yes
+  command: "kubeadm init --token 2f1a31.00f66dec74fd53f3 --api-advertise-addresses=172.42.42.1"
+  tags:
+    - k8s
+
+- name: Ensure Network Start Script
+  become: yes
+  copy:
+    src: files/start-weave
+    dest: /usr/local/bin/start-weave
+    owner: root
+    group: root
+    mode: 0755
