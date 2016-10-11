@@ -8,8 +8,12 @@
 - name: Ensure Network Start Script
   become: yes
   copy:
-    src: files/start-weave
-    dest: /usr/local/bin/start-weave
+    src: files/{{ item }}
+    dest: /usr/local/bin/{{ item }}
     owner: root
     group: root
     mode: 0755
+  with_items:
+    - "start-weave"
+    - "start-calico"
+    - "start-canal"
