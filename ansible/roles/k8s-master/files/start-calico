@@ -1,3 +1,3 @@
 #!/bin/bash
 
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico-containers/master/docs/cni/kubernetes/manifests/kubeadm/calico.yaml
+kubectl create -f http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/calico.yaml
