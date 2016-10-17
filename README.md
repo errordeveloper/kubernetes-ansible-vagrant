@@ -197,6 +197,50 @@ ubuntu@k8s1:~$ kubectl scale deployment hello-deployment --replicas=5
 deployment "hello-deployment" scaled
 ```
 
+### Service Health Check
+The test container image used above `davidkbainbridge/docker-hello-world:latest`
+is built with a health check capability. The container provides a REST end
+point that will return `200 Ok` by default, but this can be manual set to a
+different value to test error cases. See the container documentation
+at https://github.com/davidkbainbridge/docker-hello-world for more information.
+
+To see the health of any given instance of the service implementation, you can
+`ssh` to the k8s1 and perform a `kubectl get po -o wide`. This will show the
+pods augmented with the number of restarts.
+
+```
+ubuntu@k8s1:~$ kubectl get po -o wide
+NAME                                READY     STATUS    RESTARTS   AGE       IP          NODE
+hello-deployment-3696513547-fhh2y   1/1       Running   0          12s       10.40.0.1   k8s2
+hello-deployment-3696513547-ocgas   1/1       Running   0          12s       10.38.0.2   k8s3
+hello-deployment-3696513547-y257u   1/1       Running   0          12s       10.38.0.1   k8s3
+```
+
+To demonstrate the health check capability of the cluster, you can open up a
+`ssh` session to k8s1 and run `watch -d kubectl get po -o wide`. This command
+will periodically update the screen with information about the pods including
+the number of restarts.
+
+To cause one of the container instances to start reporting a failed health
+value you can set a random instance to fail using
+
+```
+curl -XPOST -sSL http://$(dig @100.64.0.10 +short \
+     hello-service.default.svc.cluster.local)/health -d '{"status":501}'
+```
+
+This will set the health check on a random instance in the cluster to return
+"501 Internal Server Error". If you want to fail the health check on a specific
+instance you will nee to make a similar `curl` request to the specific
+container instance.
+
+After setting the health check to return a failure value monitor the
+`kubectl get po -o wide` command. After about 30 seconds one of the pod
+restarts counts should be incremented. This represented Kubernetes killing and
+restarting a pod because of a failed health check.
+
+*NOTE: the frequency of health checks is configurable*
+
 ### Clean Up
 On each vagrant machine is installed a utility as `/usr/local/bin/clean-k8s`.
 executing this script as `sudo` will reset the servers back to a point where
