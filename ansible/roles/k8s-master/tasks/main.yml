@@ -1,7 +1,7 @@
 ---
 - name: Ensure kubeadm initialization
   become: yes
-  command: "kubeadm init --token 2f1a31.00f66dec74fd53f3 --api-advertise-addresses=172.42.42.1"
+  command: "kubeadm init --token=2f1a31.00f66dec74fd53f3 --api-advertise-addresses=172.42.42.11 --skip-preflight-checks=true"
   tags:
     - k8s
 
@@ -20,7 +20,19 @@
 
 - name: Ensure jq package is installed
   become: yes
+  when: ansible_distribution == 'Ubuntu'
   apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - jq
+  tags:
+    - k8s
+
+- name: Ensure jq package is installed
+  become: yes
+  when: ansible_distribution == 'CentOS'
+  yum:
     name: "{{ item }}"
     state: latest
   with_items:
@@ -30,7 +42,7 @@
 
 - name: Set --advertise-address flag in kube-apiserver static pod manifest (workaround for https://github.com/kubernetes/kubernetes/issues/34101)
   become: yes
-  shell: "jq '.spec.containers[0].command |= .+ [\"--advertise-address=172.42.42.1\"]' /etc/kubernetes/manifests/kube-apiserver.json > /tmp/kube-apiserver.json && mv /tmp/kube-apiserver.json /etc/kubernetes/manifests/kube-apiserver.json"
+  shell: "jq '.spec.containers[0].command |= .+ [\"--advertise-address=172.42.42.11\"]' /etc/kubernetes/manifests/kube-apiserver.json > /tmp/kube-apiserver.json && mv /tmp/kube-apiserver.json /etc/kubernetes/manifests/kube-apiserver.json"
   tags:
     - k8s
 

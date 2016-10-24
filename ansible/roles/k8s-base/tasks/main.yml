@@ -1,5 +1,6 @@
 ---
 - name: Ensure SSH Directories
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   file:
     path: /home/ubuntu/.ssh
@@ -9,6 +10,7 @@
     mode: 0700
 
 - name: Copy SSH Key Files
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   copy:
     src: files/{{ item }}
@@ -22,6 +24,7 @@
     - config
 
 - name: Ensure Authorized SSH Key
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   authorized_key:
     user: ubuntu
@@ -41,11 +44,12 @@
     dest: /etc/hosts
     line: "{{ item.ip }} {{ item.name }}"
   with_items:
-    - { ip: "172.42.42.1", name: "k8s1" }
-    - { ip: "172.42.42.2", name: "k8s2" }
-    - { ip: "172.42.42.3", name: "k8s3" }
+    - { ip: "172.42.42.11", name: "k8s1" }
+    - { ip: "172.42.42.12", name: "k8s2" }
+    - { ip: "172.42.42.13", name: "k8s3" }
 
-- name: Ensure Google Cloud Apt Key
+- name: Ensure Kubernetes APT Key
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   apt_key:
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -53,16 +57,18 @@
   tags:
     - k8s
 
-- name: Ensure Kubernetes Repository
+- name: Ensure Kubernetes APT Repository
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   apt_repository:
-    repo: 'deb http://apt.kubernetes.io/ kubernetes-xenial main'
+    repo: 'deb http://apt.kubernetes.io/ kubernetes-xenial-unstable main'
     state: present
     update_cache: yes
   tags:
     - k8s
 
 - name: Ensure Base Kubernetes
+  when: ansible_distribution == 'Ubuntu'
   become: yes
   apt:
     name: "{{ item }}"
@@ -76,11 +82,47 @@
   tags:
     - k8s
 
-- name: Ensure Kubernetes Cleanup
-  become:
-  copy:
-    src: files/clean-k8s
-    dest: /usr/local/bin
-    mode: 0755
-    owner: root
-    group: root
+- name: Ensure Kubernetes YUM repository
+  when: ansible_distribution == 'CentOS'
+  become: yes
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes YUM repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el$releasever-$basearch-unstable
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    gpgcheck: yes
+    state: present
+  tags:
+    - k8s
+
+- name: Ensure Base Kubernetes
+  when: ansible_distribution == 'CentOS'
+  become: yes
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - docker
+    - kubelet
+    - kubeadm
+    - kubectl
+    - kubernetes-cni
+  tags:
+    - k8s
+
+- name: Ensure docker.service
+  service: name=docker state=started enabled=yes
+  tags:
+    - k8s
+
+- name: Ensure kubelet.service
+  service: name=kubelet state=started enabled=yes
+  tags:
+    - k8s
+
+- name: Ensure firewalld.service (to debug some of the user issues)
+  when: ansible_distribution == 'CentOS'
+  service: name=firewalld state=started enabled=yes
+  tags:
+    - k8s

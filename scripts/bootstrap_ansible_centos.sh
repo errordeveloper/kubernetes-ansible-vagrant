@@ -18,8 +18,14 @@
 set -e
 
 echo "Installing Ansible..."
-apt-get update -y
-apt-get install -y software-properties-common
-apt-add-repository ppa:ansible/ansible
-apt-get update
-apt-get install -y ansible apt-transport-https
+
+cat <<EOF > /etc/yum.repos.d/epel.repo 
+[EPEL]
+name=EPEL
+baseurl=http://download.fedoraproject.org/pub/epel/\$releasever/\$basearch/
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+EOF
+
+yum install -y ansible
