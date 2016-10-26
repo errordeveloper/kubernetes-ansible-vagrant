@@ -96,6 +96,10 @@
   tags:
     - k8s
 
+- file: path=/var/lib/kubelet state=directory setype=svirt_sandbox_file_t
+  when: ansible_distribution == 'CentOS'
+  become: yes
+
 - name: Ensure Base Kubernetes
   when: ansible_distribution == 'CentOS'
   become: yes
