@@ -46,19 +46,9 @@
   tags:
     - k8s
 
-- name: Set --proxy-mode flag in kube-proxy daemonset (workaround for https://github.com/kubernetes/kubernetes/issues/34101)
+- name: Set --cluster-cidr flag in kube-proxy daemonset (workaround for https://github.com/kubernetes/kubernetes/issues/34101)
   become: yes
-  shell: "kubectl -n kube-system get ds -l 'component=kube-proxy-amd64' -o json | jq '.items[0].spec.template.spec.containers[0].command |= .+ [\"--proxy-mode=userspace\"]' | kubectl apply -f - && kubectl -n kube-system delete pods -l 'component=kube-proxy-amd64'"
-  tags:
-    - k8s
-
-- firewalld: port=6443/tcp zone=trusted state=enabled
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - k8s
-
-- firewalld: port=9898/tcp zone=trusted state=enabled
-  when: ansible_distribution == 'CentOS'
+  shell: "kubectl -n kube-system get ds -l 'component=kube-proxy-amd64' -o json | jq '.items[0].spec.template.spec.containers[0].command |= .+ [\"--cluster-cidr=10.32.0.0/12\"]' | kubectl apply -f - && kubectl -n kube-system delete pods -l 'component=kube-proxy-amd64'"
   tags:
     - k8s
 
@@ -72,3 +62,4 @@
   tags:
     - k8s
 
+- command: firewall-cmd --reload

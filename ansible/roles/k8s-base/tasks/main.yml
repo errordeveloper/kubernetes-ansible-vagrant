@@ -128,35 +128,7 @@
     - k8s
 
 
-# TODO: checke https://github.com/kubernetes/contrib/blob/master/ansible/roles/node/tasks/firewalld.yml
-
-- firewalld: zone=trusted interface=eth1 state=enabled
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - k8s
-
-- firewalld: zone=trusted interface=weave state=enabled
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - k8s
-
-- firewalld: source=172.42.42.0/24 zone=trusted state=enabled
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - k8s
-
-# 10.32.0.0/12 is the default pod CIDR for Weave Net
-# you will need to update this if you are using a different
-# network provider, or a different CIDR for whatever reason
-- firewalld: source=10.32.0.0/12 zone=trusted state=enabled
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - k8s
-
-- firewalld: port=10250/tcp zone=trusted state=enabled
-  when: ansible_distribution == 'CentOS'
-  tags:
-    - k8s
+# TODO: check https://github.com/kubernetes/contrib/blob/master/ansible/roles/node/tasks/firewalld.yml
 
 - firewalld: zone=trusted interface=eth1 permanent=true state=enabled immediate=true
   when: ansible_distribution == 'CentOS'
@@ -173,6 +145,9 @@
   tags:
     - k8s
 
+# 10.32.0.0/12 is the default pod CIDR for Weave Net
+# you will need to update this if you are using a different
+# network provider, or a different CIDR for whatever reason
 - firewalld: source=10.32.0.0/12 zone=trusted permanent=true state=enabled
   when: ansible_distribution == 'CentOS'
   tags:
@@ -182,3 +157,5 @@
   when: ansible_distribution == 'CentOS'
   tags:
     - k8s
+
+- command: firewall-cmd --reload
