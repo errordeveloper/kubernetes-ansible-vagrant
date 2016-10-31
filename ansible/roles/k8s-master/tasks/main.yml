@@ -52,11 +52,13 @@
   tags:
     - k8s
 
+# Equivalent of `firewall-cmd --permanent --zone=trusted --add-port=9898`
 - firewalld: port=6443/tcp zone=trusted permanent=true state=enabled immediate=true
   when: ansible_distribution == 'CentOS'
   tags:
     - k8s
 
+# Equivalent of `firewall-cmd --permanent --zone=trusted --add-port=9898`
 - firewalld: port=9898/tcp zone=trusted permanent=true state=enabled immediate=true
   when: ansible_distribution == 'CentOS'
   tags:
