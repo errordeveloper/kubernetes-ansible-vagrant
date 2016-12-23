@@ -19,7 +19,7 @@ set -e
 
 echo "Installing Ansible..."
 apt update -y
-apt install -y software-properties-common
-apt add-repository ppa:ansible/ansible
+apt install -y software-properties-common python-software-properties
+add-apt-repository ppa:ansible/ansible
 apt update
 apt install -y ansible apt-transport-https
