@@ -167,3 +167,4 @@
     - k8s
 
 - command: firewall-cmd --reload
+  when: ansible_distribution == 'CentOS'
